@@ -66,28 +66,31 @@ def log_query(query_text, matches):
         writer = csv.writer(f)
         writer.writerow([query_text] + [idx for idx, _ in matches])
 
-# 7. Matching & display logic
+# 7. Matching & display logic with error handling
 if st.button("Find Matches") and query:
-    with st.spinner("Finding best matches…"):
-        q_emb = encode_texts([query])[0]
-        matches = find_top_matches(q_emb, embeddings, top_k=5)
+    # If no products remain after filtering
+    if embeddings.shape[0] == 0:
+        st.error("No products available for the selected filters. Please adjust your filters.")
+    else:
+        with st.spinner("Finding best matches…"):
+            q_emb = encode_texts([query])[0]
+            try:
+                matches = find_top_matches(q_emb, embeddings, top_k=5)
+            except ValueError:
+                st.error("Unable to compute matches—please try a different query or adjust filters.")
+                matches = []
 
-    st.subheader("Top Matches")
-    for idx, score in matches:
-        prod = df.iloc[idx]
-        # Uncomment if you have an image_url column:
-        # st.image(prod["image_url"], width=150)
-        st.markdown(f"**{prod['name']}** — _Score: {score:.2f}_")
-        st.write(prod["description"])
-        st.write(f"Category: {prod['category']}  •  Price: ${prod['price']:.2f}")
-        st.markdown("---")
-
-    # 8. Log that query and its matches
-    log_query(query, matches)
-
-
-
-
-
-
+        if matches:
+            st.subheader("Top Matches")
+            for idx, score in matches:
+                prod = df.iloc[idx]
+                # Uncomment to show images if you have an image_url column:
+                # st.image(prod["image_url"], width=150)
+                st.markdown(f"**{prod['name']}** — _Score: {score:.2f}_")
+                st.write(prod["description"])
+                st.write(f"Category: {prod['category']}  •  Price: ${prod['price']:.2f}")
+                st.markdown("---")
+            log_query(query, matches)
+        else:
+            st.warning("No matching products found.")
 
