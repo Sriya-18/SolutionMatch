@@ -1,0 +1,6 @@
+product_id,name,description,category,price
+P001,AlphaWidget,"High-performance widget for industrial use",Widgets,199.99
+P002,BetaGadget,"Compact gadget ideal for home automation",Gadgets,89.50
+P003,GammaTool,"Multi-function tool with precision settings",Tools,129.00
+P004,DeltaDevice,"Smart device with AI-driven features",Devices,249.75
+P005,EpsilonItem,"Affordable item for everyday tasks",Accessories,29.95
