@@ -1,0 +1,3 @@
+[server]
+# Disable file‐watcher (avoids errors inspecting torch internals)
+fileWatcherType = "none"
