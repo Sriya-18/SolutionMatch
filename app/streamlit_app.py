@@ -69,31 +69,29 @@ def log_query(query_text, matches):
 # 7. Matching & display logic with error handling
 if st.button("Find Matches") and query:
     # 1) Ensure we have products to search
-    if embeddings.size == 0:
+    if embeddings.shape[0] == 0:
         st.error("❗ No products match your filters. Please adjust filters and try again.")
-    else:
-        with st.spinner("Finding best matches…"):
-            q_emb = encode_texts([query])[0]
-            try:
-                matches = find_top_matches(q_emb, embeddings, top_k=5)
-            except Exception as e:
-                # Catch any similarity‐related error
-                st.error(f"Error computing matches: {e}")
-                matches = []
+        st.stop()  # <-- This stops further execution of this script
+    # 2) Otherwise proceed to match
+    with st.spinner("Finding best matches…"):
+        q_emb = encode_texts([query])[0]
+        try:
+            matches = find_top_matches(q_emb, embeddings, top_k=5)
+        except Exception as e:
+            st.error(f"Error computing matches: {e}")
+            st.stop()
 
-        # 2) If we got valid matches, display them
-        if matches:
-            st.subheader("Top Matches")
-            for idx, score in matches:
-                prod = df.iloc[idx]
-                # Display image if available
-                if "image_url" in prod and prod["image_url"]:
-                    st.image(prod["image_url"], width=150)
-                st.markdown(f"**{prod['name']}** — _Score: {score:.2f}_")
-                st.write(prod["description"])
-                st.write(f"Category: {prod['category']}  •  Price: ${prod['price']:.2f}")
-                st.markdown("---")
-            log_query(query, matches)
-        else:
-            st.warning("No matches found. Try a different query.")
+    if matches:
+        st.subheader("Top Matches")
+        for idx, score in matches:
+            prod = df.iloc[idx]
+            if "image_url" in prod and prod["image_url"]:
+                st.image(prod["image_url"], width=150)
+            st.markdown(f"**{prod['name']}** — _Score: {score:.2f}_")
+            st.write(prod["description"])
+            st.write(f"Category: {prod['category']}  •  Price: ${prod['price']:.2f}")
+            st.markdown("---")
+        log_query(query, matches)
+    else:
+        st.warning("No matches found. Try a different query.")
 
